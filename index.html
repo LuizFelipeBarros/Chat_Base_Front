@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HálcON online</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="chat-container hero-panel">
+      <figure class="bot-hero">
+          <div class="bot-avatar">🦅</div>
+          <figcaption>Hálc ON</figcaption>
+          <p class="hero-subtitle">Seu guia gamer para dicas, lançamentos e nostalgia.</p>
+      </figure>
+      <figure class="hero-image-wrap">
+        <img src="assets/HálcON.png" alt="Gavião Gamer">
+      </figure>
+      <div id="controles">
+            <button id="iniciarBtn">Iniciar conversa</button>
+            <button id="limparBtn">Limpar tela</button>
+            <button id="encerrarBtn">Encerrar conversa</button>
+      </div>
+    </div>
+
+    <div class="chat-container">
+        <header class="chat-header">
+            <h1>GG Online</h1>
+            <div id="connection-status" class="status-offline">Conectando...</div>
+        </header>
+        <div id="chat-box" class="chat-box">
+            </div>
+        <section class="quick-replies" aria-label="Sugestões rápidas">
+            <button class="quick-reply" data-text="Dicas de Elden Ring">Dicas de Elden Ring</button>
+            <button class="quick-reply" data-text="Lançamentos de PS5">Lançamentos de PS5</button>
+            <button class="quick-reply" data-text="Melhores jogos retro">Melhores jogos retro</button>
+        </section>
+        <footer class="chat-input-area">
+            <input type="text" id="message-input" placeholder="Converse com o GamerBot...">
+            <button id="send-button">Enviar</button>
+        </footer>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+  
