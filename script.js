@@ -1,4 +1,4 @@
-const URL_BACKEND = 'https://chat-base-back-bo8a.onrender.com/' 
+const URL_BACKEND = 'http://localhost:5000' 
 
 document.addEventListener('DOMContentLoaded', () => {
     let socket = null;
@@ -66,20 +66,17 @@ document.addEventListener('DOMContentLoaded', () => {
     setChatEnabled(false);
     connectionStatus.textContent = 'Desconectado';
     connectionStatus.className = 'status-offline';
-    addMessageToChat('Status', 'GamerBot online. Pergunte sobre qualquer jogo!', 'status');
+    addMessageToChat('Status', 'Clique em "Iniciar conversa" para começar.', 'status');
 
     // Função para conectar ao servidor
     function iniciarConversa() {
         if (socket && socket.connected) return;
 
-        connectionStatus.textContent = 'Loading...';
-        connectionStatus.className = 'status-offline status-loading';
-
         socket = io(URL_BACKEND);
 
         socket.on('connect', () => {
             console.log('Conectado ao servidor Socket.IO! SID:', socket.id);
-            connectionStatus.textContent = 'Online';
+            connectionStatus.textContent = 'Conectado';
             connectionStatus.className = 'status-online';
             addMessageToChat('Status', 'Conectado ao servidor de chat.', 'status');
             setChatEnabled(true);
@@ -137,19 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
             addMessageToChat('Erro', 'Não conectado ao servidor.', 'error');
         }
     }
-
-    function handleQuickReply(event) {
-        const text = event.currentTarget.dataset.text;
-        if (!text) return;
-
-        messageInput.value = text;
-        messageInput.focus();
-        sendMessageToServer();
-    }
-
-    document.querySelectorAll('.quick-reply').forEach((button) => {
-        button.addEventListener('click', handleQuickReply);
-    });
 
     // Eventos dos botões
     iniciarBtn.addEventListener('click', iniciarConversa);
