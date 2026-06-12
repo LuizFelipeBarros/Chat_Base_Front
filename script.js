@@ -94,6 +94,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function sendQuickReply(button) {
+        const presetText = (button.dataset.text || button.textContent).trim();
+        sendMessage(presetText);
+    }
+
     // Inicialmente desativa o chat
     setChatEnabled(false);
     updateConnectionStatus(false);
@@ -161,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     quickReplyButtons.forEach((button) => {
         button.addEventListener('click', () => {
-            sendMessage(button.dataset.text || button.textContent);
+            sendQuickReply(button);
         });
     });
 
