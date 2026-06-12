@@ -10,8 +10,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const iniciarBtn = document.getElementById('iniciarBtn');
     const encerrarBtn = document.getElementById('encerrarBtn');
     const limparBtn = document.getElementById('limparBtn');
+    const quickReplyButtons = document.querySelectorAll('.quick-reply');
 
     let userSessionId = null;
+
+    function updateConnectionStatus(isConnected) {
+        connectionStatus.textContent = isConnected ? 'Conectado' : 'Desconectado';
+        connectionStatus.className = isConnected ? 'status-online' : 'status-offline';
+        setChatEnabled(isConnected);
+    }
 
     // Função para adicionar mensagens no chat
     function addMessageToChat(sender, text, type = 'normal') {
@@ -62,10 +69,34 @@ document.addEventListener('DOMContentLoaded', () => {
         sendButton.disabled = !enabled;
     }
 
+    function extractMessagePayload(data) {
+        if (typeof data === 'string') {
+            return { sender: 'Bot', text: data };
+        }
+
+        return {
+            sender: data?.remetente || data?.sender || 'Bot',
+            text: data?.texto || data?.mensagem || data?.message || data?.erro || '',
+        };
+    }
+
+    function sendMessage(text) {
+        const messageText = (text || messageInput.value).trim();
+        if (messageText === '') return;
+
+        if (socket && socket.connected) {
+            addMessageToChat('user', messageText);
+            socket.emit('enviar_mensagem', { mensagem: messageText, session_id: userSessionId });
+            messageInput.value = '';
+            messageInput.focus();
+        } else {
+            addMessageToChat('Erro', 'Não conectado ao servidor.', 'error');
+        }
+    }
+
     // Inicialmente desativa o chat
     setChatEnabled(false);
-    connectionStatus.textContent = 'Desconectado';
-    connectionStatus.className = 'status-offline';
+    updateConnectionStatus(false);
     addMessageToChat('Status', 'Clique em "Iniciar conversa" para começar.', 'status');
 
     // Função para conectar ao servidor
@@ -76,32 +107,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         socket.on('connect', () => {
             console.log('Conectado ao servidor Socket.IO! SID:', socket.id);
-            connectionStatus.textContent = 'Conectado';
-            connectionStatus.className = 'status-online';
+            updateConnectionStatus(true);
             addMessageToChat('Status', 'Conectado ao servidor de chat.', 'status');
-            setChatEnabled(true);
         });
 
         socket.on('disconnect', () => {
             console.log('Desconectado do servidor Socket.IO.');
-            connectionStatus.textContent = 'Desconectado';
-            connectionStatus.className = 'status-offline';
+            updateConnectionStatus(false);
             addMessageToChat('Status', 'Você foi desconectado.', 'status');
-            setChatEnabled(false);
         });
 
         socket.on('status_conexao', (data) => {
-            if (data.session_id) {
-                userSessionId = data.session_id;
+            if (data?.session_id || data?.sessionId) {
+                userSessionId = data.session_id || data.sessionId;
             }
         });
 
         socket.on('nova_mensagem', (data) => {
-            addMessageToChat(data.remetente, data.texto);
+            const payload = extractMessagePayload(data);
+            addMessageToChat(payload.sender, payload.text);
         });
 
         socket.on('erro', (data) => {
-            addMessageToChat('Erro', data.erro, 'error');
+            const payload = extractMessagePayload(data);
+            addMessageToChat('Erro', payload.text, 'error');
         });
     }
 
@@ -109,7 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function encerrarConversa() {
         if (socket && socket.connected) {
             socket.disconnect();
-            setChatEnabled(false);
             addMessageToChat('Status', 'Conversa encerrada pelo usuário.', 'status');
         }
     }
@@ -122,17 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Enviar mensagem para o servidor
     function sendMessageToServer() {
-        const messageText = messageInput.value.trim();
-        if (messageText === '') return;
-
-        if (socket && socket.connected) {
-            addMessageToChat('user', messageText);
-            socket.emit('enviar_mensagem', { mensagem: messageText });
-            messageInput.value = '';
-            messageInput.focus();
-        } else {
-            addMessageToChat('Erro', 'Não conectado ao servidor.', 'error');
-        }
+        sendMessage();
     }
 
     // Eventos dos botões
@@ -141,8 +159,15 @@ document.addEventListener('DOMContentLoaded', () => {
     limparBtn.addEventListener('click', limparTela);
     sendButton.addEventListener('click', sendMessageToServer);
 
+    quickReplyButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            sendMessage(button.dataset.text || button.textContent);
+        });
+    });
+
     messageInput.addEventListener('keypress', (event) => {
         if (event.key === 'Enter') {
+            event.preventDefault();
             sendMessageToServer();
         }
     });
